@@ -1,0 +1,21 @@
+# Clone the repository
+git clone https://github.com/yourusername/autoparts-sales.git
+
+# Move to project directory
+cd autoparts-sales
+
+# Install dependencies
+composer install
+npm install
+
+# Copy environment file and configure database
+cp .env.example .env
+php artisan key:generate
+
+# Update .env file with your MySQL credentials
+
+# Run database migrations
+php artisan migrate
+
+# Serve the application
+php artisan serve

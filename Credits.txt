@@ -1,0 +1,11 @@
+Developed by: Mohammad Sadman Chowdhury
+Project: AutoParts Sales Management System
+Year: 2025
+
+Description:
+A complete Laravel-based AutoParts sales management system featuring:
+- Real-time discount calculation
+- Stock management and low stock warning
+- Role-based authentication
+- Daily, Monthly, and Yearly reports
+- Clean and printable receipt design
