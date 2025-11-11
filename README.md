@@ -84,7 +84,7 @@ The main focus was to ensure **real-time interactivity** for discount calculatio
 **Mohammad Sadman Chowdhury**  
 _Bachelor of Science in Computer Science & Engineering_  
 Premier University, Chittagong  
-📧 Email: [YourEmail@example.com]
+📧 Email: [--]
 
 > **© 2025 - parts Management System**  
 > All rights reserved. Unauthorized copying of this project, via any medium, is strictly prohibited.
