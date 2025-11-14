@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\Models\Part;
 use App\Models\PartImage;
 use Illuminate\Http\Request;
@@ -44,6 +45,13 @@ class PartController extends Controller
         'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:4096',
     ]);
 
+    //  // If SKU missing, auto-generate a unique one (temporary safe fallback)
+    // if (empty($validated['sku'])) {
+    //     do {
+    //         $candidate = 'SKU-' . strtoupper(Str::random(8));
+    //     } while (Part::where('sku', $candidate)->exists());
+    //     $validated['sku'] = $candidate;
+    // }
     $validated['created_by'] = Auth::id();
     $part = Part::create($validated);
 

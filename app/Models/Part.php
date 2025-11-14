@@ -45,6 +45,27 @@ class Part extends Model
      */
     protected static function booted()
     {
+            static::creating(function ($part) {
+        if (empty($part->sku)) {
+            // Example rule: BRAND-YYYYMMDD-XXXX (increment)
+            $prefix = strtoupper(substr($part->brand ?? 'GEN', 0, 3));
+            $date = now()->format('Ymd');
+
+            // find last SKU for today with same prefix and extract numeric suffix
+            $last = self::where('sku', 'like', "{$prefix}-{$date}-%")
+                        ->orderBy('id', 'desc')
+                        ->first();
+
+            if ($last && preg_match('/-(\d+)$/', $last->sku, $m)) {
+                $next = str_pad(intval($m[1]) + 1, 4, '0');
+            } else {
+                $next = '0001';
+            }
+
+            $part->sku = "{$prefix}-{$date}-{$next}";
+        }
+    });
+
         static::deleting(function (Part $part) {
             // If model uses SoftDeletes and this is a soft-delete, skip cleanup
             if (method_exists($part, 'isForceDeleting')) {

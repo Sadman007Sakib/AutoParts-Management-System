@@ -14,9 +14,11 @@
 
             <div class="col-12 col-md-6">
               <label class="form-label">SKU</label>
-              <input name="sku" value="{{ old('sku', $part->sku ?? '') }}" class="form-control" readonly placeholder="(auto-generated)">
+              <input type="text" name="sku" value="{{ old('sku', $part->sku ?? '') }}" class="form-control" readonly placeholder="(auto-generated)">
               <div class="form-text">SKU is generated automatically. You can edit it on the edit page if needed.</div>
+              @error('sku') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
             </div>
+
 
               <div class="col-12 col-md-6">
                 <label class="form-label">Name</label>
