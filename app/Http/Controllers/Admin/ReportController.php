@@ -12,7 +12,7 @@ class ReportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth','role:admin']);
+        $this->middleware(['auth', 'role:admin']);
     }
 
     /**
@@ -24,16 +24,16 @@ class ReportController extends Controller
         $start = Carbon::parse($date)->startOfDay();
         $end = Carbon::parse($date)->endOfDay();
 
-        $sales = Sale::with('seller','items.part')
+        $sales = Sale::with('seller', 'items.part')
             ->whereBetween('created_at', [$start, $end])
-            ->orderBy('created_at','desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $report = $this->computeSalesSummary($sales);
 
         $threshold = (int) config('shop.low_stock_threshold', 50);
-        $lowParts = Part::where('current_quantity','<',$threshold)
-                        ->orderBy('current_quantity','asc')->get();
+        $lowParts = Part::where('current_quantity', '<', $threshold)
+            ->orderBy('current_quantity', 'asc')->get();
 
         return view('admin.reports.daily', array_merge($report, [
             'date' => $date,
@@ -57,16 +57,16 @@ class ReportController extends Controller
         }
         $end = (clone $start)->endOfMonth();
 
-        $sales = Sale::with('seller','items.part')
+        $sales = Sale::with('seller', 'items.part')
             ->whereBetween('created_at', [$start, $end])
-            ->orderBy('created_at','desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $report = $this->computeSalesSummary($sales);
 
         $threshold = (int) config('shop.low_stock_threshold', 50);
-        $lowParts = Part::where('current_quantity','<',$threshold)
-                        ->orderBy('current_quantity','asc')->get();
+        $lowParts = Part::where('current_quantity', '<', $threshold)
+            ->orderBy('current_quantity', 'asc')->get();
 
         return view('admin.reports.monthly', array_merge($report, [
             'period' => $start->format('F Y'),
@@ -90,16 +90,16 @@ class ReportController extends Controller
         $start = Carbon::create($year, 1, 1)->startOfYear();
         $end = Carbon::create($year, 12, 31)->endOfYear();
 
-        $sales = Sale::with('seller','items.part')
+        $sales = Sale::with('seller', 'items.part')
             ->whereBetween('created_at', [$start, $end])
-            ->orderBy('created_at','desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $report = $this->computeSalesSummary($sales);
 
         $threshold = (int) config('shop.low_stock_threshold', 50);
-        $lowParts = Part::where('current_quantity','<',$threshold)
-                        ->orderBy('current_quantity','asc')->get();
+        $lowParts = Part::where('current_quantity', '<', $threshold)
+            ->orderBy('current_quantity', 'asc')->get();
 
         return view('admin.reports.yearly', array_merge($report, [
             'period' => $start->format('Y'),

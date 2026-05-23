@@ -26,10 +26,22 @@ class AuthenticatedSessionController extends Controller
 public function store(LoginRequest $request): RedirectResponse
 {
     $request->authenticate();
+
+    $user = Auth::user();
+
+    // 🔒 ROLE RESTRICTION (IMPORTANT FIX)
+    if (!in_array($user->role, ['admin', 'coordinator', 'staff'])) {
+        Auth::logout();
+
+        return back()->withErrors([
+            'email' => 'You are not allowed to access this system.',
+        ]);
+    }
+
     $request->session()->regenerate();
 
-    // simple: always send authenticated users to the home page
-    return redirect()->route('home');}
+    return redirect()->route('home');
+}
 
 
     /**

@@ -4,15 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
-
-// Uncomment SoftDeletes if you use soft deletes on parts
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Part extends Model
 {
-    use HasFactory;
-    use SoftDeletes; // safe to include; if you don't want soft deletes, remove this line and the trait import
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'sku',
@@ -25,67 +21,114 @@ class Part extends Model
         'created_by',
     ];
 
-    /**
-     * Relationship: a part has many images
-     */
+    protected $casts = [
+        'cost_price' => 'decimal:2',
+        'sell_price' => 'decimal:2',
+    ];
+
+    protected $appends = [
+        'profit_per_item',
+        'inventory_value',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
     public function images()
     {
         return $this->hasMany(PartImage::class);
     }
 
-    /**
-     * Booted model events — ensure related images (and their files) are deleted
-     * when the part is permanently deleted (forceDelete).
-     *
-     * Behavior:
-     * - If soft deletes are used: on normal delete() (soft) files remain.
-     * - On forceDelete(): related PartImage records are deleted (which triggers PartImage::deleting
-     *   and removes files).
-     * - If you do not use SoftDeletes, delete() will be treated as permanent and cleanup will run.
-     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getProfitPerItemAttribute()
+    {
+        return ($this->sell_price ?? 0) - ($this->cost_price ?? 0);
+    }
+
+    public function getInventoryValueAttribute()
+    {
+        return ($this->cost_price ?? 0) * ($this->current_quantity ?? 0);
+    }
+
+    public function getPrimaryImageAttribute()
+    {
+        return $this->images->first();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeLowStock($query)
+    {
+        return $query->where('current_quantity', '<=', 5);
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('brand', 'like', "%{$search}%");
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EVENTS
+    |--------------------------------------------------------------------------
+    */
+
     protected static function booted()
     {
-            static::creating(function ($part) {
-        if (empty($part->sku)) {
-            // Example rule: BRAND-YYYYMMDD-XXXX (increment)
-            $prefix = strtoupper(substr($part->brand ?? 'GEN', 0, 3));
-            $date = now()->format('Ymd');
+        static::creating(function ($part) {
 
-            // find last SKU for today with same prefix and extract numeric suffix
-            $last = self::where('sku', 'like', "{$prefix}-{$date}-%")
-                        ->orderBy('id', 'desc')
-                        ->first();
+            if (empty($part->sku)) {
 
-            if ($last && preg_match('/-(\d+)$/', $last->sku, $m)) {
-                $next = str_pad(intval($m[1]) + 1, 4, '0');
-            } else {
-                $next = '0001';
+                $prefix = strtoupper(substr($part->brand ?? 'GEN', 0, 3));
+
+                $date = now()->format('Ymd');
+
+                $last = self::where('sku', 'like', "{$prefix}-{$date}-%")
+                    ->latest('id')
+                    ->first();
+
+                if ($last && preg_match('/-(\d+)$/', $last->sku, $m)) {
+                    $next = str_pad(((int)$m[1]) + 1, 4, '0', STR_PAD_LEFT);
+                } else {
+                    $next = '0001';
+                }
+
+                $part->sku = "{$prefix}-{$date}-{$next}";
             }
-
-            $part->sku = "{$prefix}-{$date}-{$next}";
-        }
-    });
+        });
 
         static::deleting(function (Part $part) {
-            // If model uses SoftDeletes and this is a soft-delete, skip cleanup
+
             if (method_exists($part, 'isForceDeleting')) {
+
                 if (! $part->isForceDeleting()) {
-                    // soft delete: do not remove images/files yet
                     return;
                 }
             }
 
-            // For permanent deletion: delete all related images (this will fire their deleting event)
-            foreach ($part->images()->get() as $img) {
-                try {
-                    $img->delete();
-                } catch (\Throwable $e) {
-                    \Log::warning("Failed deleting part->image during part deletion", [
-                        'part_id' => $part->id,
-                        'image_id' => $img->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            foreach ($part->images as $img) {
+                $img->delete();
             }
         });
     }

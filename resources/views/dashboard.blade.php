@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.erp')
 @section('title', 'Dash')
 @section('content')
 <div class="flex justify-center items-center min-h-[calc(100vh-80px)] bg-gray-50 py-10">

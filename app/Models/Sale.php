@@ -17,6 +17,12 @@ class Sale extends Model
     'discount_type',
     'total_amount',
     'notes',
+    'status',
+    'payment_status',
+    'delivery_status',
+    'source',
+    'phone',
+    'address',
     ];
 
     public function items()

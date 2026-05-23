@@ -17,6 +17,18 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <div class="mt-4">
+            <x-input-label for="invite_code" :value="__('Invite Code From Admin')" />
+
+            <input id="invite_code" type="text" name="invite_code" required class="block mt-1 w-full border rounded p-2">
+
+            @error('invite_code')
+                <div style="color:red;">
+                    {{ $message }}
+                </div>
+            @enderror
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
