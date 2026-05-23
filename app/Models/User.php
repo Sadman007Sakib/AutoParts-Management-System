@@ -22,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-         'role', // make role mass-assignable so User::create(['role' => ...]) works
+        //  'role', // make role mass-assignable so User::create(['role' => ...]) works
     ];
 
     /**

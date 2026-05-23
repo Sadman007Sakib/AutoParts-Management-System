@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.erp')
 @section('title', 'Profile-Update')
 @section('content')
 <div class="container py-6">
@@ -26,7 +26,7 @@
 
     <form method="POST" action="{{ route('profile.update') }}">
       @csrf
-      @method('PUT')
+      @method('PATCH')
 
       <div class="mb-3">
         <label class="form-label">Name</label>

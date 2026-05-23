@@ -14,22 +14,17 @@ class EnsureUserHasRole
      * Usage in routes: 'role:admin' or 'role:admin,coordinator'
      */
     public function handle(Request $request, Closure $next, ...$roles)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if (! $user) {
-            return redirect()->route('login')->with('error', 'You must be logged in to access this page.');
-        }
-
-        // if route didn't require any specific role, allow access
-        if (empty($roles)) {
-            return $next($request);
-        }
-
-        if (! in_array($user->role, $roles)) {
-            return redirect()->route('home')->with('error', 'You are not authorized to access this page.');
-        }
-
-        return $next($request);
+    if (! $user) {
+        return redirect()->route('login');
     }
+
+    if (! empty($roles) && ! in_array($user->role, $roles)) {
+        abort(403, 'Unauthorized access');
+    }
+
+    return $next($request);
+}
 }
